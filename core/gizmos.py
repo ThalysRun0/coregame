@@ -50,7 +50,7 @@ class Gizmos:
 
     @staticmethod
     def add_hit(hit: Hit, color=(255, 0, 0), normal_scale=20, duration=1.0):
-        # Ajouter un hit à la liste à afficher (avec alpha fade)
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {hit.point} with normal {hit.normal}")
         Gizmos.hits_to_draw.append({
             'hit': hit,
             'color': color,
@@ -61,7 +61,6 @@ class Gizmos:
 
     @staticmethod
     def update_hit(delta_time: float, data: dict):
-        # Met à jour et dessine un seul hit avec alpha
         data['life'] -= delta_time
         if data['life'] <= 0:
             Gizmos.hits_to_draw.remove(data)
@@ -82,7 +81,7 @@ class Gizmos:
         end = point + normal * data['normal_scale']
 
         color = (*data['color'][:3], 255)
-        pygame.draw.circle(surface, color, (int(point.x), int(point.y)), 4)
+        pygame.draw.circle(surface, color, (int(point.x), int(point.y)), data['normal_scale'])
         pygame.draw.line(surface, color, point, end, 2)
 
     @staticmethod

@@ -43,22 +43,18 @@ class thisScene(Scene):
         player2_hit: Hit = self.player2.collider.check_collision(self.ball.collider)
         if player1_hit.collided:
             Gizmos.add_hit(player1_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-#            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {player1_hit.point} with normal {player1_hit.normal}")
             self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(player1_hit.normal)
         if player2_hit.collided:
             Gizmos.add_hit(player2_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-#            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {player2_hit.point} with normal {player2_hit.normal}")
             self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(player2_hit.normal)
         
         top_wall_hit: Hit = self.top_wall.collider.check_collision(self.ball.collider)
         bottom_wall_hit: Hit = self.bottom_wall.collider.check_collision(self.ball.collider)
         if top_wall_hit.collided:
             Gizmos.add_hit(top_wall_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-#            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {top_wall_hit.point} with normal {top_wall_hit.normal}")
             self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(top_wall_hit.normal)
         if bottom_wall_hit.collided:
             Gizmos.add_hit(bottom_wall_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-#            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {bottom_wall_hit.point} with normal {bottom_wall_hit.normal}")
             self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(bottom_wall_hit.normal)
 
         if self.ball.screen_pos.x + self.ball.size.x <= 0 or self.ball.screen_pos.x - self.ball.size.x >= self.screen.get_width():

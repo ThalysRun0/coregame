@@ -29,7 +29,7 @@ class thisScene(Scene):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         self.ball.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
         self.ball.rigidbody.velocity = pygame.Vector2(0, 0)
-        self.ball.rigidbody.apply_force(pygame.Vector2(100, -50))
+        self.ball.rigidbody.apply_force(pygame.Vector2(150, -100))
 #        self.ball2.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
 #        self.ball2.rigidbody.velocity = pygame.Vector2(0, 0)
 #        self.ball2.rigidbody.apply_force(pygame.Vector2(-100, 50))

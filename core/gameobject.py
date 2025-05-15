@@ -30,7 +30,9 @@ class Gameobject(pygame.sprite.Sprite):
 
     @abstractmethod
     def start(self):
-        """to be called at the very end of __init__"""
+        """to be called at the very end of __init__
+        ```super().start()
+        """
         pass
 
     @abstractmethod
@@ -49,8 +51,18 @@ class Gameobject(pygame.sprite.Sprite):
         if not self.active:
             return
 
-    def get_center(self, camera:Camera=None):
-        if camera is None:
-            camera = self.camera
-        self.screen_pos = camera.world_to_screen(self.position)
-        return pygame.Vector2(self.screen_pos.x + self.size.x / 2, self.screen_pos.y + self.size.y / 2)
+    def get_center(self) -> pygame.Vector2:
+        return self.position + self.size / 2
+
+    def get_rect(self) -> pygame.Rect:
+        return pygame.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
+
+    def get_circle(self) -> pygame.Vector2:
+        return pygame.Vector2(self.position.x + self.size.x / 2, self.position.y + self.size.y / 2)
+    
+    #def get_center(self, camera:Camera=None):
+    #    if camera is None:
+    #        camera = self.camera
+    #    center: pygame.Vector2 = pygame.Vector2(self.position.x + self.size.x / 2, self.position.y + self.size.y / 2)
+    #    return camera.world_to_screen(center)
+    #    #return pygame.Vector2(self.screen_pos.x + self.size.x / 2, self.screen_pos.y + self.size.y / 2)

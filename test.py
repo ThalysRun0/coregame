@@ -10,38 +10,90 @@ from core.scene import Scene
 from core.input import Input
 from core.gameobject import Gameobject
 from core.gizmos import Gizmos
-from core.collider2d import CircleCollider2D, CapsuleCollider2D
+from core.collider2d import Collider2D, RectCollider2D, CircleCollider2D, Hit
 from core.rigidbody2d import Rigidbody2D
 
 class thisScene(Scene):
     def __init__(self, screen):
         super().__init__("main_scene", screen)
-        self.ball = self.Ball("ball", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
-        self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(10, self.screen.get_height()/2))
-        self.player2 = self.Paddle("player2", self.screen, self.main_camera, pygame.Vector2(760, self.screen.get_height()/2))
+        self.ball = self.Ball("ball1", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
+#        self.ball2 = self.Ball("ball2", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
+        self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(20, self.screen.get_height()/2))
+        self.player2 = self.Paddle("player2", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()-40, self.screen.get_height()/2))
+        self.top_wall = self.Wall("top_wall", self.screen, self.main_camera, pygame.Vector2(0, 0), pygame.Vector2(self.screen.get_width(), 20))
+        self.bottom_wall = self.Wall("bottom_wall", self.screen, self.main_camera, pygame.Vector2(0, self.screen.get_height()-20), pygame.Vector2(self.screen.get_width(), 20))
+        self.sprites.add(self.player1, self.player2, self.ball, self.top_wall, self.bottom_wall)
+        #Gizmos.toggle()
 
     def start(self):
-        self.sprites.add(self.player1, self.player2, self.ball)
-        #pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_SPACE}))
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
+        self.ball.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
+        self.ball.rigidbody.velocity = pygame.Vector2(0, 0)
+        self.ball.rigidbody.apply_force(pygame.Vector2(100, -50))
+#        self.ball2.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
+#        self.ball2.rigidbody.velocity = pygame.Vector2(0, 0)
+#        self.ball2.rigidbody.apply_force(pygame.Vector2(-100, 50))
 
     def update(self, delta_time):
         super().update(delta_time)
-        if self.player1.collider.check_collision(self.ball.collider):
-            self.ball.rigidbody.velocity *= -1
-        if self.player2.collider.check_collision(self.ball.collider):
-            self.ball.rigidbody.velocity *= -1
-        if Input.get_key_down(pygame.K_SPACE):
-            self.toggle_pause()
-        if Input.get_key_down(pygame.K_ESCAPE):
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
+        # generic way to check for collision
+        self.check_collision() # TODO: need refinement
 
-    def draw(self, screen=None):
+#        player1_hit: Hit = self.player1.collider.check_collision(self.ball.collider)
+#        player2_hit: Hit = self.player2.collider.check_collision(self.ball.collider)
+#        if player1_hit.collided:
+#            Gizmos.add_hit(player1_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
+##            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {player1_hit.point} with normal {player1_hit.normal}")
+#            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(player1_hit.normal)
+#        if player2_hit.collided:
+#            Gizmos.add_hit(player2_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
+##            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {player2_hit.point} with normal {player2_hit.normal}")
+#            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(player2_hit.normal)
+#        
+#        top_wall_hit: Hit = self.top_wall.collider.check_collision(self.ball.collider)
+#        bottom_wall_hit: Hit = self.bottom_wall.collider.check_collision(self.ball.collider)
+#        if top_wall_hit.collided:
+#            Gizmos.add_hit(top_wall_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
+##            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {top_wall_hit.point} with normal {top_wall_hit.normal}")
+#            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(top_wall_hit.normal)
+#        if bottom_wall_hit.collided:
+#            Gizmos.add_hit(bottom_wall_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
+##            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {bottom_wall_hit.point} with normal {bottom_wall_hit.normal}")
+#            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(bottom_wall_hit.normal)
+
+        if self.ball.screen_pos.x + self.ball.size.x <= 0 or self.ball.screen_pos.x - self.ball.size.x >= self.screen.get_width():
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "restart"}))
+
+    def handle_event(self, event):
+        super().handle_event(event)
+
+        if Input.get_key_down(pygame.K_SPACE):
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "pause"}))
+        if Input.get_key_down(pygame.K_ESCAPE):
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "quit"}))
+
+        if event.type == pygame.USEREVENT:
+#            if event.action == "collision":
+#                game_object: Gameobject = event.self
+#                other_object: Gameobject = event.other
+#                hit: Hit = event.hit
+#                if hasattr(game_object, "rigidbody"):
+#                    game_object.rigidbody.velocity = game_object.rigidbody.velocity.reflect(hit.normal)
+#                if hasattr(other_object, "rigidbody"):
+#                    other_object.rigidbody.velocity = other_object.rigidbody.velocity.reflect(hit.normal)
+
+            if event.action == "pause":
+                self.toggle_pause()
+            if event.action == "restart":
+                self.start()
+            if event.action == "quit":
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def draw(self, screen):
         super().draw(screen)
         #Debug.main.draw(screen)
         #Debug.debug_grid_vertical(screen, 100)
         line = 0
-        Debug.debug_on_screen(screen, 0, line, f"(screen: {self.screen.get_clip()})", WHITE, False)
-        line += 1
         Debug.debug_on_screen(screen, 0, line, f"(ball_velocity: {self.ball.rigidbody.velocity})", WHITE, False)
         line += 1
         Debug.debug_on_screen(screen, 0, line, f"(ball_position: {self.ball.position})", WHITE, False)
@@ -51,34 +103,39 @@ class thisScene(Scene):
         Debug.debug_on_screen(screen, 0, line, f"(player2_position: {self.player2.position})", WHITE, False)
 
 
+    class Wall(Gameobject):
+        def __init__(self, name, screen, camera, position: pygame.Vector2, size: pygame.Vector2):
+            super().__init__(name, screen, camera, position, size)
+            self.collider = RectCollider2D(self)
+
+        def draw(self, screen: pygame.Surface, camera):
+            super().draw(screen, camera)
+            pygame.draw.rect(screen, WHITE, self.rect)
+            Gizmos.draw_collider(screen, self.collider, GREEN, 0)
+
+
     class Ball(Gameobject):
         def __init__(self, name, screen, camera, position: pygame.Vector2, radius=10):
             super().__init__(name, screen, camera, position, size=pygame.Vector2(radius*2, radius*2))
             self.radius = radius
             self.collider = CircleCollider2D(self, self.radius)
             self.rigidbody = Rigidbody2D(self, use_gravity=False)
-            self.start()
-
-        def start(self):
-            self.rigidbody.apply_force(pygame.Vector2(100, -100))
 
         def update(self, delta_time):
             super().update(delta_time)
             self.rigidbody.update(delta_time)
 
-            if self.screen_pos.y <= 0 or self.screen_pos.y + self.size.y >= self.screen.get_height():
-                self.rigidbody.velocity.y *= -1
-
         def draw(self, screen: pygame.Surface, camera):
             super().draw(screen, camera)
             pygame.draw.circle(screen, WHITE, self.get_center(), self.radius)
-            Gizmos.draw_collider(screen, self.collider, GREEN)
+            Gizmos.draw_collider(screen, self.collider, GREEN, 0)
 
 
     class Paddle(Gameobject):
         def __init__(self, name, screen, camera, position: pygame.Vector2):
             super().__init__(name, screen, camera, position, size=pygame.Vector2(20, 100))
-            self.collider = CapsuleCollider2D(self, 10)
+            #self.collider = CapsuleCollider2D(self, 10)
+            self.collider = RectCollider2D(self)
 
         def update(self, delta_time):
             super().update(delta_time)
@@ -90,10 +147,13 @@ class thisScene(Scene):
         def draw(self, screen: pygame.Surface, camera):
             super().draw(screen, camera)
             pygame.draw.rect(screen, WHITE, self.rect)
-            Gizmos.draw_collider(screen, self.collider, GREEN)
+            Gizmos.draw_collider(screen, self.collider, GREEN, 0)
 
 
 class thisGame(Game):
+    def __init__(self, root, width=800, height=600, fps=DEFAULT_CORE_FPS):
+        super().__init__(root, width, height, fps)
+
     def start(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         self.scene_manager.load_scene(thisScene(self.screen))

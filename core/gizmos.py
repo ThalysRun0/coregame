@@ -6,6 +6,11 @@ from core.collider2d import *
 class Gizmos:
     enabled = True  # Toggle global du mode debug
     alpha = 100     # Niveau de transparence (0 à 255)
+    hits_to_draw = []
+
+    @staticmethod
+    def toggle():
+        Gizmos.enabled = not Gizmos.enabled
 
     @staticmethod
     def draw_collider(surface, collider: Collider2D, color=(0, 255, 0), width=1):
@@ -13,17 +18,17 @@ class Gizmos:
             return
 
         if isinstance(collider, RectCollider2D):
-            Gizmos.draw_rect(surface, collider.get_rect(), color, width)
+            Gizmos.draw_rect(surface, collider, color, width)
 
         elif isinstance(collider, CircleCollider2D):
-            center = collider.get_center()
-            Gizmos.draw_circle(surface, center, collider.radius, color, width)
-
-        elif isinstance(collider, CapsuleCollider2D):
-            Gizmos.draw_capsule(surface, collider, color, width)
+            Gizmos.draw_circle(surface, collider, color, width)
+        
+        else:
+            raise NotImplementedError(f"Collider type {type(collider)} not supported for Gizmos.")
 
     @staticmethod
-    def draw_rect(surface, rect, color, width=1):
+    def draw_rect(surface, rect_collider: RectCollider2D, color, width=1):
+        rect = rect_collider.get_rect()
         if width == 0:
             # Filled with alpha
             temp = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
@@ -33,7 +38,9 @@ class Gizmos:
             pygame.draw.rect(surface, color, rect, width)
 
     @staticmethod
-    def draw_circle(surface, center, radius, color, width=1):
+    def draw_circle(surface, center_collider: CircleCollider2D, color, width=1):
+        center = center_collider.get_center()
+        radius = center_collider.radius
         if width == 0:
             temp = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
             pygame.draw.circle(temp, (*color, Gizmos.alpha), (radius, radius), radius)
@@ -42,35 +49,57 @@ class Gizmos:
             pygame.draw.circle(surface, color, (int(center.x), int(center.y)), int(radius), width)
 
     @staticmethod
-    def draw_capsule(surface, capsule, color, width=1):
-        rect, circle1, circle2 = capsule.get_rect_and_circles()
-        Gizmos.draw_rect(surface, rect, color, width)
-        Gizmos.draw_circle(surface, circle1, capsule.radius, color, width)
-        Gizmos.draw_circle(surface, circle2, capsule.radius, color, width)
+    def add_hit(hit: Hit, color=(255, 0, 0), normal_scale=20, duration=1.0):
+        # Ajouter un hit à la liste à afficher (avec alpha fade)
+        Gizmos.hits_to_draw.append({
+            'hit': hit,
+            'color': color,
+            'normal_scale': normal_scale,
+            'life': duration,
+            'max_life': duration,
+        })
 
     @staticmethod
-    def toggle():
-        Gizmos.enabled = not Gizmos.enabled
+    def update_hit(delta_time: float, data: dict):
+        # Met à jour et dessine un seul hit avec alpha
+        data['life'] -= delta_time
+        if data['life'] <= 0:
+            Gizmos.hits_to_draw.remove(data)
+            return
 
-#class GizmosUIButton:
-#    def __init__(self, position=(10, 10), size=(120, 32)):
-#        self.position = pygame.Vector2(position)
-#        self.size = pygame.Vector2(size)
-#        self.rect = pygame.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
-#        self.font = pygame.font.SysFont('Arial', 16)
-#        self.bg_color_on = (0, 180, 0)
-#        self.bg_color_off = (100, 100, 100)
-#        self.text_color = (255, 255, 255)
-#
-#    def handle_event(self, event):
-#        if event.type == pygame.MOUSEBUTTONDOWN:
-#            if self.rect.collidepoint(event.pos):
-#                Gizmos.toggle()
-#
-#    def draw(self, surface):
-#        color = self.bg_color_on if Gizmos.enabled else self.bg_color_off
-#        pygame.draw.rect(surface, color, self.rect, border_radius=6)
-#        label = "Gizmos: ON" if Gizmos.enabled else "Gizmos: OFF"
-#        text_surface = self.font.render(label, True, self.text_color)
-#        text_rect = text_surface.get_rect(center=self.rect.center)
-#        surface.blit(text_surface, text_rect)
+        data['alpha'] = max(0, int(255 * (data['life'] / data['max_life'])))
+        data['color'] = (*data['color'][:3], data['alpha'])
+        data['normal_scale'] = data['normal_scale'] * (data['life'] / data['max_life'])
+
+    @staticmethod
+    def draw_hit(data: dict, surface: pygame.Surface):
+        hit: Hit = data['hit']
+        if not hit.collided:
+            return
+
+        point = hit.point
+        normal = hit.normal
+        end = point + normal * data['normal_scale']
+
+        color = (*data['color'][:3], 255)
+        pygame.draw.circle(surface, color, (int(point.x), int(point.y)), 4)
+        pygame.draw.line(surface, color, point, end, 2)
+
+    @staticmethod
+    def update(delta_time: float):
+        if not Gizmos.enabled:
+            return
+
+        for data in Gizmos.hits_to_draw[:]:
+            Gizmos.update_hit(delta_time, data)
+
+    @staticmethod
+    def draw(screen: pygame.Surface):
+        if not Gizmos.enabled:
+            return
+        # Surface temporaire avec alpha
+        temp_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        for data in Gizmos.hits_to_draw[:]:
+            Gizmos.draw_hit(data, temp_surface)
+
+        screen.blit(temp_surface, (0, 0))

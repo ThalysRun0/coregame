@@ -15,7 +15,6 @@ python coregame/test.py
 
 actual ERROR:
 ... coregame/test.py", line 46, in update
-self.ball.rigidbody.velocity.reflect(player1_hit.normal)
-ValueError: Normal must not be of length zero.
-
-because collider.check_collision::Hit(normal) is pygame.Vector2(0, 0) 
+self.ball.rigidbody.velocity.reflect(player1_hit.normal)  
+ValueError: Normal must not be of length zero.  
+-> collider.check_collision::Hit(normal) is pygame.Vector2(0, 0) 

@@ -1,0 +1,20 @@
+import pygame
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 255)
+RED = (255, 0, 0)
+
+DEFAULT_FONTNAME = pygame.font.match_font("consolas") or pygame.font.match_font("courriernew") or pygame.font.match_font("dejavusansmono")
+DEFAULT_FONTSIZE = 15
+
+DEFAULT_CORE_DEBUG = True
+DEFAULT_CORE_DEBUG_MAX_MESSAGES = 15
+DEFAULT_CORE_SCREEN_WIDTH = 800
+DEFAULT_CORE_SCREEN_HEIGHT = 700
+DEFAULT_CORE_FPS = 60
+DEFAULT_CORE_FIXED_FPS = 50
+
+DEFAULT_BODY_GRAVITY = pygame.math.Vector2(0, 0.5)
+DEFAULT_BODY_FRICTION = 0.98
+DEFAULT_BODY_INERTIA = 0.01

@@ -1,1 +1,11 @@
-nothing
+# THALYSRUN0
+## coregame
+### install-dev
+
+git clone <me>
+python -m venv coregame-venv
+source coregame-venv/bin/activate
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+python coregame/test.py

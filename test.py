@@ -67,6 +67,8 @@ class thisScene(Scene):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "pause"}))
         if Input.get_key_down(pygame.K_ESCAPE):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "quit"}))
+        if Input.get_key_down(pygame.K_F1):
+            Gizmos.toggle()
 
         if event.type == pygame.USEREVENT:
 #            if event.action == "collision":

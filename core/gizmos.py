@@ -86,9 +86,6 @@ class Gizmos:
 
     @staticmethod
     def update(delta_time: float):
-        if not Gizmos.enabled:
-            return
-
         for data in Gizmos.hits_to_draw[:]:
             Gizmos.update_hit(delta_time, data)
 

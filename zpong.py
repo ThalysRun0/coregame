@@ -14,7 +14,7 @@ from core.gizmos import Gizmos
 from core.collider2d import Collider2D, RectCollider2D, CircleCollider2D, Hits, Hit
 from core.rigidbody2d import Rigidbody2D
 
-class thisScene(Scene):
+class MainScene(Scene):
     COUNTDOWN_EVENT = pygame.USEREVENT + 1
 
     def __init__(self, screen):
@@ -40,7 +40,7 @@ class thisScene(Scene):
     def play(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         self.unincr.active = False
-        self.ball.rigidbody.apply_force(pygame.Vector2(150, -100))
+        self.ball.rigidbody.apply_force(pygame.Vector2(200, -150))
 
     def update(self, delta_time):
         super().update(delta_time)
@@ -159,7 +159,7 @@ class thisScene(Scene):
             super().__init__(name, screen, camera, position, size=pygame.Vector2(radius*2, radius*2))
             self.radius = radius
             self.collider = CircleCollider2D(self, self.radius)
-            self.rigidbody = Rigidbody2D(self, use_gravity=False)
+            self.rigidbody = Rigidbody2D(self, use_gravity=True)
 
         def update(self, delta_time):
             super().update(delta_time)
@@ -189,13 +189,13 @@ class thisScene(Scene):
             Gizmos.draw_collider(screen, self.collider, GREEN, 0)
 
 
-class thisGame(Game):
-    def __init__(self, root, width=1200, height=600, fps=DEFAULT_CORE_FPS):
+class PongGame(Game):
+    def __init__(self, root, width=800, height=600, fps=DEFAULT_CORE_FPS):
         super().__init__(root, width, height, fps)
 
     def start(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
-        self.scene_manager.load_scene(thisScene(self.screen))
+        self.scene_manager.load_scene(MainScene(self.screen))
 
     def load_sound(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
@@ -204,5 +204,5 @@ class thisGame(Game):
         self.sound_manager.load("off", f"{sound_folder}/off.ogg")
         self.sound_manager.load("bounce", f"{sound_folder}/button2.ogg")
 
-game = thisGame("./logs/")
+game = PongGame("./logs/")
 game.run()

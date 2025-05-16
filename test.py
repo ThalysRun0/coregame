@@ -89,7 +89,7 @@ class thisScene(Scene):
         super().draw(screen)
         #Debug.main.draw(screen)
         #Debug.debug_grid_vertical(screen, 100)
-        line = 0
+        line = 2
         Debug.debug_on_screen(screen, 0, line, f"(ball_velocity: {self.ball.rigidbody.velocity})", WHITE, False)
         line += 1
         Debug.debug_on_screen(screen, 0, line, f"(ball_position: {self.ball.position})", WHITE, False)

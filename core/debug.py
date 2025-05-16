@@ -12,13 +12,14 @@ class Debug:
             cls.main = super(Debug, cls).__new__(cls)
         return cls.main
     
-    def __init__(self, root, font=None, max_messages=10, x=10, y=10, line_spacing=5, color=(255, 255, 255)):
+    def __init__(self, root, level=DEBUG_CORE_WARNING, font=None, max_messages=10, x=10, y=10, line_spacing=5, color=(255, 255, 255)):
         if hasattr(self, '_initialized') and self._initialized:
             return
         self.folderpath = os.path.dirname(root)
         self.filepath = os.path.join(self.folderpath, f"core.debug.{datetime.date.isoformat(datetime.datetime.now())}.{datetime.date.strftime(datetime.datetime.now(), "%H%M%S")}")
         if DEFAULT_CORE_DEBUG: print(f"LOG file initialization : {self.filepath}")
         if DEFAULT_CORE_DEBUG: print(f"font initialization : ({DEFAULT_FONTNAME}, {DEFAULT_FONTSIZE})")
+        self.level = level
         if font is None:
             font = pygame.font.Font(DEFAULT_FONTNAME, DEFAULT_FONTSIZE)
         self.font = font
@@ -30,14 +31,15 @@ class Debug:
         self.color = color
         self._initialized = True
 
-    def log(self, message):
-        with open(self.filepath, 'a') as f:
-            f.write(f"{datetime.datetime.now()}-{len(self.messages)}-{message}\n")
+    def log(self, message, level=DEBUG_CORE_WARNING):
+        if level <= self.level:
+            with open(self.filepath, 'a') as f:
+                f.write(f"{datetime.datetime.now()}-{len(self.messages)}-{message}\n")
         
-        self.messages.append(message)
-        if len(self.messages) > self.max_messages:
-            self.messages.pop(0)
-    
+            self.messages.append(message)
+            if len(self.messages) > self.max_messages:
+                self.messages.pop(0)
+        
     def draw(self, surface: pygame.Surface = None):
         for i, msg in enumerate(reversed(self.messages)):
             text_surface = self.font.render(msg, True, self.color)

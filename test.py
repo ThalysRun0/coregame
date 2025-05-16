@@ -10,34 +10,34 @@ from core.scene import Scene
 from core.input import Input
 from core.gameobject import Gameobject
 from core.gizmos import Gizmos
-from core.collider2d import Collider2D, RectCollider2D, CircleCollider2D, Hit
+from core.collider2d import Collider2D, RectCollider2D, CircleCollider2D, Hits, Hit
 from core.rigidbody2d import Rigidbody2D
 
 class thisScene(Scene):
     def __init__(self, screen):
         super().__init__("main_scene", screen)
         self.ball = self.Ball("ball1", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
-#        self.ball2 = self.Ball("ball2", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
         self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(20, self.screen.get_height()/2))
         self.player2 = self.Paddle("player2", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()-40, self.screen.get_height()/2))
         self.top_wall = self.Wall("top_wall", self.screen, self.main_camera, pygame.Vector2(0, 0), pygame.Vector2(self.screen.get_width(), 20))
         self.bottom_wall = self.Wall("bottom_wall", self.screen, self.main_camera, pygame.Vector2(0, self.screen.get_height()-20), pygame.Vector2(self.screen.get_width(), 20))
         self.sprites.add(self.player1, self.player2, self.ball, self.top_wall, self.bottom_wall)
-        #Gizmos.toggle()
 
     def start(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         self.ball.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
         self.ball.rigidbody.velocity = pygame.Vector2(0, 0)
         self.ball.rigidbody.apply_force(pygame.Vector2(150, -100))
-#        self.ball2.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
-#        self.ball2.rigidbody.velocity = pygame.Vector2(0, 0)
-#        self.ball2.rigidbody.apply_force(pygame.Vector2(-100, 50))
 
     def update(self, delta_time):
         super().update(delta_time)
-        # generic way to check for collision
+
 #        self.check_collision() # TODO: need refinement
+#        while len(Hits.hits) > 0:
+#            hit: Hit = Hits.pop_hit()
+#            if hit.collided:
+#                if isinstance(hit.self.parent, self.Ball):
+#                    hit.self.parent.rigidbody.velocity = hit.self.parent.rigidbody.velocity.reflect(hit.normal)
 
         player1_hit: Hit = self.player1.collider.check_collision(self.ball.collider)
         player2_hit: Hit = self.player2.collider.check_collision(self.ball.collider)
@@ -71,15 +71,6 @@ class thisScene(Scene):
             Gizmos.toggle()
 
         if event.type == pygame.USEREVENT:
-#            if event.action == "collision":
-#                game_object: Gameobject = event.self
-#                other_object: Gameobject = event.other
-#                hit: Hit = event.hit
-#                if hasattr(game_object, "rigidbody"):
-#                    game_object.rigidbody.velocity = game_object.rigidbody.velocity.reflect(hit.normal)
-#                if hasattr(other_object, "rigidbody"):
-#                    other_object.rigidbody.velocity = other_object.rigidbody.velocity.reflect(hit.normal)
-
             if event.action == "pause":
                 self.toggle_pause()
             if event.action == "restart":

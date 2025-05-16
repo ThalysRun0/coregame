@@ -7,7 +7,7 @@ from core.debug import Debug
 from core.gizmos import Gizmos
 from core.camera import Camera
 from core.gameobject import Gameobject
-from core.collider2d import Collider2D, Hit
+from core.collider2d import Collider2D, Hits, Hit
 
 class Scene:
     def __init__(self, name, screen: pygame.Surface):
@@ -46,12 +46,11 @@ class Scene:
                         other_object: Gameobject = other_object
                         if game_object != other_object:
                             if hasattr(other_object, "collider"):
-                                other_collider: Collider2D = game_object.collider
+                                other_collider: Collider2D = other_object.collider
                                 hit: Hit = game_collider.check_collision(other_collider)
                                 if hit.collided:
+                                    Hits.add_hit(hit)
                                     Gizmos.add_hit(hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-                                    if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> {game_object.name} hits {other_object.name} @{hit.point}, normal:{hit.normal}")
-                                    pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "collision", "self":game_object, "other": other_object, "hit": hit}))    
 
     def fixed_update(self, fixed_delta_time):
         if not self.pause:

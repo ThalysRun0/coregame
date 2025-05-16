@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import pygame
-from typing import NamedTuple
+from typing import List, NamedTuple
 from abc import ABC, abstractmethod
 
 from core.constants import *
@@ -16,6 +16,17 @@ class Hit(NamedTuple):
     self: Collider2D
     other: Collider2D
 
+
+class Hits:
+    hits = []
+
+    @staticmethod
+    def add_hit(hit: Hit):
+        Hits.hits.append(hit)
+    
+    @staticmethod
+    def pop_hit() -> Hit:
+        return Hits.hits.pop(0)
 
 class Collider2D(ABC):
     def __init__(self, parent: Gameobject, is_trigger=False):
@@ -46,6 +57,7 @@ class RectCollider2D(Collider2D):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> parent({parent.name})")
   
     def get_collision_point(self, other: Collider2D) -> pygame.Vector2:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         if isinstance(other, RectCollider2D):
             return self._collide_with_rect(other)
         elif isinstance(other, CircleCollider2D):
@@ -53,6 +65,7 @@ class RectCollider2D(Collider2D):
         raise NotImplementedError()
 
     def _collide_with_rect(self, other: 'RectCollider2D') -> pygame.Vector2:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         center = self.get_center()
         rect = other.get_rect()
         closest_x = max(rect.left, min(center.x, rect.right))
@@ -60,6 +73,7 @@ class RectCollider2D(Collider2D):
         return pygame.Vector2(closest_x, closest_y)
 
     def _collide_with_circle(self, other: 'CircleCollider2D') -> pygame.Vector2:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         circle_center = other.get_center()
         rect = self.get_rect()
         closest_x = max(rect.left, min(circle_center.x, rect.right))
@@ -67,6 +81,7 @@ class RectCollider2D(Collider2D):
         return pygame.Vector2(closest_x, closest_y)
 
     def check_collision(self, other: Collider2D) -> Hit:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         if isinstance(other, RectCollider2D):
             return self._check_rect_rect_collision(other)
         elif isinstance(other, CircleCollider2D):
@@ -74,6 +89,7 @@ class RectCollider2D(Collider2D):
         raise NotImplementedError()
 
     def _check_rect_rect_collision(self, other: 'RectCollider2D') -> Hit:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         a = self.get_rect()
         b = other.get_rect()
         collided = a.colliderect(b)
@@ -87,6 +103,7 @@ class RectCollider2D(Collider2D):
         return Hit(True, point, normal, self, other)
 
     def _check_rect_circle_collision(self, other: 'CircleCollider2D') -> Hit:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         circle_center = other.get_center()
         point = self.get_collision_point(other)
         distance = (circle_center - point).length()
@@ -102,6 +119,7 @@ class CircleCollider2D(Collider2D):
         self.radius = radius
     
     def get_collision_point(self, other: Collider2D) -> pygame.Vector2:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         if isinstance(other, RectCollider2D):
             return other.get_collision_point(self)  # délègue
         elif isinstance(other, CircleCollider2D):
@@ -112,6 +130,7 @@ class CircleCollider2D(Collider2D):
         raise NotImplementedError()
 
     def check_collision(self, other: Collider2D) -> Hit:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         if isinstance(other, RectCollider2D):
             return other.check_collision(self)  # délègue
         elif isinstance(other, CircleCollider2D):
@@ -119,6 +138,7 @@ class CircleCollider2D(Collider2D):
         raise NotImplementedError()
 
     def _check_circle_circle_collision(self, other: 'CircleCollider2D') -> Hit:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
         dir_vector = other.get_center() - self.get_center()
         distance = dir_vector.length()
         collided = distance < (self.radius + other.radius)

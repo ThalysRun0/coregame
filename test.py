@@ -2,6 +2,7 @@ import os
 
 import inspect
 import pygame
+from random import randint
 
 from core.constants import *
 from core.debug import Debug
@@ -14,51 +15,59 @@ from core.collider2d import Collider2D, RectCollider2D, CircleCollider2D, Hits, 
 from core.rigidbody2d import Rigidbody2D
 
 class thisScene(Scene):
+    COUNTDOWN_EVENT = pygame.USEREVENT + 1
+
     def __init__(self, screen):
         super().__init__("main_scene", screen)
-        self.ball = self.Ball("ball1", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
+        self.unincr = self.UnIncr("unincr", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2, self.screen.get_height()/2), size=(100, 50))
+        self.ball = self.Ball("ball", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
         self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(20, self.screen.get_height()/2))
         self.player2 = self.Paddle("player2", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()-40, self.screen.get_height()/2))
         self.top_wall = self.Wall("top_wall", self.screen, self.main_camera, pygame.Vector2(0, 0), pygame.Vector2(self.screen.get_width(), 20))
         self.bottom_wall = self.Wall("bottom_wall", self.screen, self.main_camera, pygame.Vector2(0, self.screen.get_height()-20), pygame.Vector2(self.screen.get_width(), 20))
-        self.sprites.add(self.player1, self.player2, self.ball, self.top_wall, self.bottom_wall)
+        self.sprites.add(self.player1, self.player2, self.ball, self.top_wall, self.bottom_wall, self.unincr)
+        self.multi_ball = []
+        self.scores = (0, 0)
 
     def start(self):
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
+        super().start()
         self.ball.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
         self.ball.rigidbody.velocity = pygame.Vector2(0, 0)
+        self.unincr.value = 3
+        pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"scene": "unincr"}))
+        pygame.time.set_timer(self.COUNTDOWN_EVENT, 1000)
+
+    def play(self):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
+        self.unincr.active = False
         self.ball.rigidbody.apply_force(pygame.Vector2(150, -100))
 
     def update(self, delta_time):
         super().update(delta_time)
 
-#        self.check_collision() # TODO: need refinement
-#        while len(Hits.hits) > 0:
-#            hit: Hit = Hits.pop_hit()
-#            if hit.collided:
-#                if isinstance(hit.self.parent, self.Ball):
-#                    hit.self.parent.rigidbody.velocity = hit.self.parent.rigidbody.velocity.reflect(hit.normal)
-
-        player1_hit: Hit = self.player1.collider.check_collision(self.ball.collider)
-        player2_hit: Hit = self.player2.collider.check_collision(self.ball.collider)
-        if player1_hit.collided:
-            Gizmos.add_hit(player1_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(player1_hit.normal)
-        if player2_hit.collided:
-            Gizmos.add_hit(player2_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(player2_hit.normal)
-        
-        top_wall_hit: Hit = self.top_wall.collider.check_collision(self.ball.collider)
-        bottom_wall_hit: Hit = self.bottom_wall.collider.check_collision(self.ball.collider)
-        if top_wall_hit.collided:
-            Gizmos.add_hit(top_wall_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(top_wall_hit.normal)
-        if bottom_wall_hit.collided:
-            Gizmos.add_hit(bottom_wall_hit, color=(255, 0, 0), normal_scale=20, duration=2.0)
-            self.ball.rigidbody.velocity = self.ball.rigidbody.velocity.reflect(bottom_wall_hit.normal)
+        self.check_collision()
+        while len(Hits.hits) > 0:
+            hit: Hit = Hits.pop_hit()
+            if hit.collided:
+                if isinstance(hit.other.parent, self.Ball):
+                    hit.other.parent.rigidbody.velocity = hit.other.parent.rigidbody.velocity.reflect(hit.normal)
 
         if self.ball.screen_pos.x + self.ball.size.x <= 0 or self.ball.screen_pos.x - self.ball.size.x >= self.screen.get_width():
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "restart"}))
+
+        for tmp_ball in self.multi_ball:
+            if tmp_ball.screen_pos.x + tmp_ball.size.x <= 0 or tmp_ball.screen_pos.x - tmp_ball.size.x >= self.screen.get_width():
+                self.multi_ball.remove(tmp_ball)
+                self.sprites.remove(tmp_ball)
+
+    # TODO: need refinement
+    def add_multi_ball(self):
+        self.multi_ball = []
+        for i in range(1, 5):
+            new_ball = self.Ball(f"ball{i}", self.screen, self.main_camera, self.ball.position)
+            new_ball.rigidbody.apply_force(pygame.Vector2(randint(-149, 149), randint(-99, 99)))
+            self.multi_ball.append(new_ball)
+        self.sprites.add(self.multi_ball)
 
     def handle_event(self, event):
         super().handle_event(event)
@@ -69,14 +78,29 @@ class thisScene(Scene):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "quit"}))
         if Input.get_key_down(pygame.K_F1):
             Gizmos.toggle()
+        if Input.get_key_down(pygame.K_F2):
+            self.add_multi_ball()
+
+        if event.type == self.COUNTDOWN_EVENT:
+            self.unincr.value -= 1
+            if self.unincr.value <= 0:
+                pygame.time.set_timer(self.COUNTDOWN_EVENT, 0)
+                self.play()
 
         if event.type == pygame.USEREVENT:
-            if event.action == "pause":
-                self.toggle_pause()
-            if event.action == "restart":
-                self.start()
-            if event.action == "quit":
-                pygame.event.post(pygame.event.Event(pygame.QUIT))
+            if hasattr(event, 'scene'):
+                if event.scene == "unincr":
+                    pygame.time.set_timer(self.COUNTDOWN_EVENT, 1000)
+            if hasattr(event, 'action'):
+                if event.action == "pause":
+                    self.toggle_pause()
+                if event.action == "restart":
+                    self.start()
+                if event.action == "quit":
+                    pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+#    def fixed_update(self, fixed_delta_time):
+#        super().fixed_update(fixed_delta_time)
 
     def draw(self, screen):
         super().draw(screen)
@@ -90,6 +114,33 @@ class thisScene(Scene):
         Debug.debug_on_screen(screen, 0, line, f"(player1_position: {self.player1.position})", WHITE, False)
         line += 1
         Debug.debug_on_screen(screen, 0, line, f"(player2_position: {self.player2.position})", WHITE, False)
+
+
+    class UnIncr(Gameobject):
+        def __init__(self, name, screen, camera, position: pygame.Vector2, size: pygame.Vector2, color=(255, 255, 255)):
+            super().__init__(name, screen, camera, position, size)
+            self.color = color
+            self.value: int
+
+        def start(self):
+            super().start()
+            self.fade_alpha = 255
+            self.fade_speed = 85  # diminue par seconde (~3 steps de fade sur 1s)
+
+        def update(self, delta_time):
+            super().update(delta_time)
+            self.fade_alpha = max(0, self.fade_alpha - self.fade_speed * delta_time)
+
+        def draw(self, screen: pygame.Surface, camera):
+            super().draw(screen, camera)
+            font = pygame.font.Font(DEFAULT_FONTNAME, 80)
+            fade_surface = pygame.Surface((screen.get_width()/2, screen.get_height()/2), pygame.SRCALPHA)
+            text = font.render(str(self.value), True, (255, 255, 255))
+            text.set_alpha(self.fade_alpha)
+            fade_surface.blit(text, self.position)
+            screen_rect = fade_surface.get_rect(center=(screen.get_width()/2, screen.get_height()/2))
+            screen.blit(fade_surface, screen_rect)
+            pygame.display.update(screen_rect)
 
 
     class Wall(Gameobject):
@@ -123,7 +174,6 @@ class thisScene(Scene):
     class Paddle(Gameobject):
         def __init__(self, name, screen, camera, position: pygame.Vector2):
             super().__init__(name, screen, camera, position, size=pygame.Vector2(20, 100))
-            #self.collider = CapsuleCollider2D(self, 10)
             self.collider = RectCollider2D(self)
 
         def update(self, delta_time):
@@ -140,7 +190,7 @@ class thisScene(Scene):
 
 
 class thisGame(Game):
-    def __init__(self, root, width=800, height=600, fps=DEFAULT_CORE_FPS):
+    def __init__(self, root, width=1200, height=600, fps=DEFAULT_CORE_FPS):
         super().__init__(root, width, height, fps)
 
     def start(self):

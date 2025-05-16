@@ -22,10 +22,16 @@ class Hits:
 
     @staticmethod
     def add_hit(hit: Hit):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Hit[{hit.self.parent.name}, {hit.other.parent.name}, {hit.point}, {hit.normal}])")
+        for previous_hit in Hits.hits:
+            previous_hit: Hit = previous_hit
+            if hit.self == previous_hit.self and hit.other == previous_hit.other:
+                return
         Hits.hits.append(hit)
     
     @staticmethod
     def pop_hit() -> Hit:
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> len(Hits.hits:{len(Hits.hits)})")
         return Hits.hits.pop(0)
 
 class Collider2D(ABC):

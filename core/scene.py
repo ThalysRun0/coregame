@@ -37,6 +37,7 @@ class Scene:
                 game_object.update(delta_time)
 
     def check_collision(self):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}", DEBUG_CORE_INFO)
         if not self.pause:
             for game_object in self.sprites:
                 game_object: Gameobject = game_object
@@ -68,6 +69,7 @@ class Scene:
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> pause:{not self.pause}")
         self.pause = not self.pause
 
-    @abstractmethod
     def handle_event(self, event: pygame.event.Event):
-        pass
+        for sprite in self.sprites:
+            sprite: Gameobject = sprite
+            sprite.handle_event(event)

@@ -36,6 +36,10 @@ class Gameobject(pygame.sprite.Sprite):
         pass
 
     @abstractmethod
+    def handle_event(self, event: pygame.event.Event):
+        pass
+
+    @abstractmethod
     def fixed_update(self, fixed_delta_time):
         if not self.active:
             return

@@ -50,7 +50,7 @@ class Gizmos:
 
     @staticmethod
     def add_hit(hit: Hit, color=(255, 0, 0), normal_scale=20, duration=1.0):
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Collision at {hit.point} with normal {hit.normal}")
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> {hit.other.parent.name} hit {hit.self.parent.name} @(point:{hit.point}, normal:{hit.normal})")
         Gizmos.hits_to_draw.append({
             'hit': hit,
             'color': color,

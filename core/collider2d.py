@@ -13,6 +13,9 @@ class Hit(NamedTuple):
     collided: bool
     point: pygame.Vector2
     normal: pygame.Vector2
+    self: Collider2D
+    other: Collider2D
+
 
 class Collider2D(ABC):
     def __init__(self, parent: Gameobject, is_trigger=False):
@@ -75,21 +78,21 @@ class RectCollider2D(Collider2D):
         b = other.get_rect()
         collided = a.colliderect(b)
         if not collided:
-            return Hit(False, pygame.Vector2(), pygame.Vector2())
+            return Hit(False, pygame.Vector2(), pygame.Vector2(), self, other)
 
         # Calcul du point de collision approximatif et de la normale
         point = self.get_collision_point(other)
         center_diff = self.get_center() - other.get_center()
-        normal = center_diff.normalize() if center_diff.length_squared() > 0 else pygame.Vector2()
-        return Hit(True, point, normal)
+        normal = center_diff.normalize() if center_diff.length_squared() > 0 else pygame.Vector2(1, 1)
+        return Hit(True, point, normal, self, other)
 
     def _check_rect_circle_collision(self, other: 'CircleCollider2D') -> Hit:
         circle_center = other.get_center()
         point = self.get_collision_point(other)
         distance = (circle_center - point).length()
         collided = distance < other.radius
-        normal = (circle_center - point).normalize() if collided and distance != 0 else pygame.Vector2()
-        return Hit(collided, point, normal)
+        normal = (circle_center - point).normalize() if collided and distance != 0 else pygame.Vector2(1, 1)
+        return Hit(collided, point, normal, self, other)
 
 
 class CircleCollider2D(Collider2D):
@@ -127,4 +130,4 @@ class CircleCollider2D(Collider2D):
             point = self.get_center()
             normal = pygame.Vector2(1, 1)
 
-        return Hit(collided, point, normal)
+        return Hit(collided, point, normal, self, other)

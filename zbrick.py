@@ -20,69 +20,81 @@ class MainScene(Scene):
     def __init__(self, screen):
         super().__init__("main_scene", screen)
         self.unincr = self.UnIncr("unincr", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2, self.screen.get_height()/2), size=(100, 50))
-        self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(20, self.screen.get_height()/2))
-        self.player2 = self.Paddle("player2", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()-40, self.screen.get_height()/2))
+        self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2, self.screen.get_height()-40))
         self.top_wall = self.Wall("top_wall", self.screen, self.main_camera, pygame.Vector2(0, 0), pygame.Vector2(self.screen.get_width(), 20))
-        self.bottom_wall = self.Wall("bottom_wall", self.screen, self.main_camera, pygame.Vector2(0, self.screen.get_height()-20), pygame.Vector2(self.screen.get_width(), 20))
+        self.left_wall = self.Wall("left_wall", self.screen, self.main_camera, pygame.Vector2(0, 20), pygame.Vector2(20, self.screen.get_height()-40))
+        self.right_wall = self.Wall("right_wall", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()-20, 20), pygame.Vector2(20, self.screen.get_height()-40))
         self.balls = []
-        self.bands = []
-        for i in range(0, 8):
-            self.bands.append(self.Band("net_{i}", self.screen, self.main_camera, pygame.Vector2((self.screen.get_width()/2)-10, i*80), pygame.Vector2(20, 50)))
-        
-        self.sprites.add(self.player1, self.player2, self.balls, self.top_wall, self.bottom_wall, self.bands)
-        self.scores: tuple[int, int] = (0, 0)
-        self.service = pygame.Vector2(-200, -150)
-        self.restart((0, 0))
+        self.bricks = []
+        for i in range(0, 10):
+            self.bricks.append(self.Brick3(f"brick3_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+        for i in range(0, 10):
+            self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
+        for i in range(0, 10):
+            self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
+
+        self.sprites.add(self.player1, self.top_wall, self.left_wall, self.right_wall, self.bricks)
+        self.scores: int = 0
+        self.restart(0)
 
     def start(self):
         super().start()
         pygame.time.set_timer(self.COUNTDOWN_EVENT, 1000)
 
-    def restart(self, score_added: tuple[int, int]):
+    def restart(self, score_added: int):
         self.unincr.value = 3
         self.balls.clear()
-        self.ball = self.Ball("ball_1", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
-        self.balls.append(self.ball)
-        self.sprites.add(self.balls)
-        self.ball.rigidbody.velocity = pygame.Vector2(0, 0)
-        self.scores = (self.scores[0] + score_added[0], self.scores[1] + score_added[1])
-        if score_added[0] > 0:
-            self.service = pygame.Vector2(-200, -150)
-            self.ball.position = pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2)
-        if score_added[1] > 0:
-            self.service = pygame.Vector2(200, -150)
-            self.ball.position = pygame.Vector2((self.screen.get_width()/2)+(self.screen.get_width()/2/2), self.screen.get_height()/2)
+        new_ball = self.add_ball("ball_1", pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
+        new_ball.rigidbody.velocity = pygame.Vector2(0, 0)
         pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "restart"}))
 
     def play(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         self.unincr.active = False
-        self.ball.rigidbody.apply_force(self.service)
+        self.balls[0].rigidbody.apply_force(pygame.Vector2(200, -150))
+
+    def add_ball(self, name, position: pygame.Vector2):
+        new_ball = self.Ball(name, self.screen, self.main_camera, position)
+        self.balls.append(new_ball)
+        self.sprites.add(new_ball)
+        return new_ball
+
+    # TODO: need refinement
+    def add_multi_ball(self):
+        for i in range(1, 5):
+            new_ball = self.add_ball(f"ball_{i+1}", self.balls[0].position)
+            new_ball.rigidbody.apply_force(pygame.Vector2(randint(-149, 149), randint(-99, 99)))
+            self.balls.append(new_ball)
+            self.sprites.add(new_ball)
 
     def update(self, delta_time):
         super().update(delta_time)
-
         self.check_collision()
         while len(Hits.hits) > 0:
             hit: Hit = Hits.pop_hit()
             if hit.collided:
-                if isinstance(hit.other.parent, self.Ball):
-                    hit.other.parent.rigidbody.velocity = hit.other.parent.rigidbody.velocity.reflect(hit.normal)
+                hit.self.parent.on_collision(hit)
+                hit.other.parent.on_collision(hit)
 
-        if self.ball.screen_pos.x + self.ball.size.x <= 0:
-            self.restart((0, 1))
-        if self.ball.screen_pos.x - self.ball.size.x >= self.screen.get_width():
-            self.restart((1, 0))
+        # quitting the bottom screen
+        for tmp_ball in self.balls:
+            tmp_ball: Gameobject = tmp_ball
+            if tmp_ball.screen_pos.y + tmp_ball.size.y >= self.screen.get_height():
+                self.balls.remove(tmp_ball)
+                tmp_ball.destroy()
+                if len(self.balls) <= 0:
+                    self.restart(0)
 
     def handle_event(self, event):
         super().handle_event(event)
-
         if Input.get_key_down(pygame.K_SPACE):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "pause"}))
         if Input.get_key_down(pygame.K_ESCAPE):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "quit"}))
         if Input.get_key_down(pygame.K_F1):
             Gizmos.toggle()
+        if Input.get_key_down(pygame.K_m):
+            self.add_multi_ball()
 
         if event.type == self.COUNTDOWN_EVENT:
             self.unincr.value -= 1
@@ -92,6 +104,8 @@ class MainScene(Scene):
 
         if event.type == pygame.USEREVENT:
             if hasattr(event, 'action'):
+                if event.action == "score":
+                    self.scores += int(event.add)
                 if event.action == "pause":
                     self.toggle_pause()
                 if event.action == "restart":
@@ -104,19 +118,20 @@ class MainScene(Scene):
         #Debug.main.draw(screen)
         #Debug.debug_grid_vertical(screen, 100)
         Debug.line = 2
-        Debug.debug_on_screen(screen, 0, Debug.line, f"{self.scores}", WHITE, True)
-        Debug.debug_on_screen(screen, 0, Debug.line, f"{self.unincr.value}", WHITE, True)
-#        Debug.debug_on_screen(screen, 0, Debug.line, f"(ball_velocity: {self.ball.rigidbody.velocity})", WHITE, False)
-#        Debug.debug_on_screen(screen, 0, Debug.line, f"(ball_position: {self.ball.position})", WHITE, False)
-#        Debug.debug_on_screen(screen, 0, Debug.line, f"(player1_position: {self.player1.position})", WHITE, False)
-#        Debug.debug_on_screen(screen, 0, Debug.line, f"(player2_position: {self.player2.position})", WHITE, False)
+        Debug.debug_on_screen(screen, 30, Debug.line, f"score : {self.scores}", WHITE, True)
+        Debug.debug_on_screen(screen, 30, Debug.line, f"decre : {self.unincr.value}", WHITE, True)
+        Debug.debug_on_screen(screen, 30, Debug.line, f"Balls : {len(self.balls)}", WHITE, True)
+#        if len(self.balls)>0:
+#            Debug.debug_on_screen(screen, 30, Debug.line, f"(ball_velocity: {self.balls[0].rigidbody.velocity})", WHITE, False)
+#            Debug.debug_on_screen(screen, 30, Debug.line, f"(ball_position: {self.balls[0].position})", WHITE, False)
+#        Debug.debug_on_screen(screen, 30, Debug.line, f"(player1_position: {self.player1.position})", WHITE, False)
 
 
     class UnIncr(Gameobject):
         def __init__(self, name, screen, camera, position: pygame.Vector2, size: pygame.Vector2, color=(255, 255, 255)):
             super().__init__(name, screen, camera, position, size)
             self.color = color
-            self.value: int = 3
+            self.value: int = 0
 
         def start(self):
             super().start()
@@ -150,18 +165,15 @@ class MainScene(Scene):
             Gizmos.draw_collider(screen, self.collider, GREEN, 0)
 
 
-    class Band(Gameobject):
-        def draw(self, screen: pygame.Surface, camera):
-            super().draw(screen, camera)
-            pygame.draw.rect(screen, GREEN, self.rect)
-
-
     class Ball(Gameobject):
         def __init__(self, name, screen, camera, position: pygame.Vector2, radius=10):
             super().__init__(name, screen, camera, position, size=pygame.Vector2(radius*2, radius*2))
             self.radius = radius
             self.collider = CircleCollider2D(self, self.radius)
-            self.rigidbody = Rigidbody2D(self, use_gravity=True)
+            self.rigidbody = Rigidbody2D(self, use_gravity=False)
+
+        def on_collision(self, hit):
+            self.rigidbody.velocity = self.rigidbody.velocity.reflect(hit.normal)
 
         def update(self, delta_time):
             super().update(delta_time)
@@ -175,23 +187,59 @@ class MainScene(Scene):
 
     class Paddle(Gameobject):
         def __init__(self, name, screen, camera, position: pygame.Vector2):
-            super().__init__(name, screen, camera, position, size=pygame.Vector2(20, 100))
+            super().__init__(name, screen, camera, position, size=pygame.Vector2(100, 20))
             self.collider = RectCollider2D(self)
 
         def update(self, delta_time):
             super().update(delta_time)
-            if Input.get_key(pygame.K_UP):
-                self.position.y -= 10
-            if Input.get_key(pygame.K_DOWN):
-                self.position.y += 10
+            if Input.get_key(pygame.K_LEFT):
+                self.position.x -= 10
+            if Input.get_key(pygame.K_RIGHT):
+                self.position.x += 10
 
         def draw(self, screen: pygame.Surface, camera):
             super().draw(screen, camera)
             pygame.draw.rect(screen, WHITE, self.rect)
             Gizmos.draw_collider(screen, self.collider, GREEN, 0)
 
+    class Brick1(Gameobject):
+        def __init__(self, name, screen, camera, position: pygame.Vector2):
+            super().__init__(name, screen, camera, position, size=pygame.Vector2(50, 20))
+            self.collider = RectCollider2D(self)
+            self.color = RED
+            self.value = 1
+            self.current_value = 0
 
-class PongGame(Game):
+        def start(self):
+            self.current_value = self.value
+
+        def on_collision(self, hit: Hit):
+            self.current_value -= 1
+            if self.current_value <= 0:
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "score", "add": f"{str(self.value)}"}))
+                self.destroy()
+
+        def draw(self, screen: pygame.Surface, camera):
+            super().draw(screen, camera)
+            pygame.draw.rect(screen, self.color, self.rect)
+            #Gizmos.draw_collider(screen, self.collider, GREEN, 0)
+
+
+    class Brick2(Brick1):
+        def __init__(self, name, screen, camera, position):
+            super().__init__(name, screen, camera, position)
+            self.color = GREEN
+            self.value = 2
+
+
+    class Brick3(Brick1):
+        def __init__(self, name, screen, camera, position):
+            super().__init__(name, screen, camera, position)
+            self.color = BLUE
+            self.value = 3
+
+
+class BrickGame(Game):
     def __init__(self, root, width=800, height=600, fps=DEFAULT_CORE_FPS):
         super().__init__(root, width, height, fps)
 
@@ -206,5 +254,5 @@ class PongGame(Game):
         self.sound_manager.load("off", f"{sound_folder}/off.ogg")
         self.sound_manager.load("bounce", f"{sound_folder}/button2.ogg")
 
-game = PongGame("./logs/")
+game = BrickGame("./logs/")
 game.run()

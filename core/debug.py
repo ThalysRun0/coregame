@@ -6,6 +6,7 @@ from core.constants import *
 
 class Debug:
     main = None
+    line = 0
 
     def __new__(cls, *args, **kwargs):
         if cls.main is None:
@@ -46,10 +47,11 @@ class Debug:
             surface.blit(text_surface, (self.x, self.y + i * (text_surface.get_height() + self.line_spacing)))
 
     @staticmethod
-    def debug_on_screen(screen: pygame.Surface, x, y, message, color=WHITE, antialias=True):
+    def debug_on_screen(screen: pygame.Surface, x, line, message, color=WHITE, antialias=True):
         font = pygame.font.Font(DEFAULT_FONTNAME, DEFAULT_FONTSIZE)
         text_surface = font.render(message, antialias, color)
-        screen.blit(text_surface, (x, y * text_surface.get_height()))
+        screen.blit(text_surface, (x, line * text_surface.get_height()))
+        Debug.line += 1
     
     @staticmethod
     def debug_grid_vertical(screen: pygame.Surface, max=50):

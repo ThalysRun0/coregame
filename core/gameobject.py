@@ -8,12 +8,13 @@ import pygame
 from core.constants import *
 from core.debug import Debug
 from core.camera import Camera
+from core.collider2d import *
 
 class Gameobject(pygame.sprite.Sprite):
     def __init__(self, name, screen: pygame.Surface=None, camera: Camera=None, position: pygame.Vector2=(0, 0), size: pygame.Vector2=(0, 0)):
         super().__init__()
         self.name = name
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}({name})")
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}({name})", DEBUG_CORE_INFO)
         if camera is None:
             camera = Camera.main
         self.camera = camera
@@ -40,10 +41,18 @@ class Gameobject(pygame.sprite.Sprite):
         pass
 
     @abstractmethod
+    def on_collision(self, hit: Hit=None):
+        pass
+
+    @abstractmethod
     def fixed_update(self, fixed_delta_time):
         if not self.active:
             return
         pass
+
+    def destroy(self):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> destroy({self.name})")
+        pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "destroy", "object": self}))
 
     def update(self, delta_time):
         if not self.active:
@@ -63,10 +72,3 @@ class Gameobject(pygame.sprite.Sprite):
 
     def get_circle(self) -> pygame.Vector2:
         return pygame.Vector2(self.position.x + self.size.x / 2, self.position.y + self.size.y / 2)
-    
-    #def get_center(self, camera:Camera=None):
-    #    if camera is None:
-    #        camera = self.camera
-    #    center: pygame.Vector2 = pygame.Vector2(self.position.x + self.size.x / 2, self.position.y + self.size.y / 2)
-    #    return camera.world_to_screen(center)
-    #    #return pygame.Vector2(self.screen_pos.x + self.size.x / 2, self.screen_pos.y + self.size.y / 2)

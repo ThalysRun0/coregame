@@ -22,16 +22,16 @@ class Hits:
 
     @staticmethod
     def add_hit(hit: Hit):
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Hit[{hit.self.parent.name}, {hit.other.parent.name}, {hit.point}, {hit.normal}])")
         for previous_hit in Hits.hits:
             previous_hit: Hit = previous_hit
             if hit.self == previous_hit.self and hit.other == previous_hit.other:
                 return
         Hits.hits.append(hit)
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> Hit[{hit.self.parent.name}, {hit.other.parent.name}, {hit.point}, {hit.normal}]", DEBUG_CORE_INFO)
     
     @staticmethod
     def pop_hit() -> Hit:
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> len(Hits.hits:{len(Hits.hits)})")
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> len(Hits.hits:{len(Hits.hits)})", DEBUG_CORE_INFO)
         return Hits.hits.pop(0)
 
 class Collider2D(ABC):
@@ -60,7 +60,7 @@ class Collider2D(ABC):
 class RectCollider2D(Collider2D):
     def __init__(self, parent: Gameobject, is_trigger=False):
         super().__init__(parent, is_trigger)
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> parent({parent.name})")
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> parent({parent.name})", DEBUG_CORE_INFO)
   
     def get_collision_point(self, other: Collider2D) -> pygame.Vector2:
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> self({self.parent.name}), other({other.parent.name})", DEBUG_CORE_INFO)
@@ -121,7 +121,7 @@ class RectCollider2D(Collider2D):
 class CircleCollider2D(Collider2D):
     def __init__(self, parent: Gameobject, radius, is_trigger=False):
         super().__init__(parent, is_trigger)
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> parent({parent.name})")
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> parent({parent.name})", DEBUG_CORE_INFO)
         self.radius = radius
     
     def get_collision_point(self, other: Collider2D) -> pygame.Vector2:

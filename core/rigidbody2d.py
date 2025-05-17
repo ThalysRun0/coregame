@@ -32,6 +32,5 @@ class Rigidbody2D:
             self.apply_gravity()
         effective_acceleration = self.acceleration * (1 - self.inertia)
         self.velocity += effective_acceleration * delta_time
-        #self.parent.position += self.velocity * delta_time
         self.parent.position += self.velocity
         self.acceleration = pygame.Vector2(0, 0)

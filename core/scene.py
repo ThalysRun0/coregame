@@ -37,7 +37,6 @@ class Scene:
                 game_object.update(delta_time)
 
     def check_collision(self):
-        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}", DEBUG_CORE_INFO)
         if not self.pause:
             for game_object in self.sprites:
                 game_object: Gameobject = game_object
@@ -70,6 +69,31 @@ class Scene:
         self.pause = not self.pause
 
     def handle_event(self, event: pygame.event.Event):
+        if event.type == pygame.USEREVENT:
+            if hasattr(event, 'action'):
+                if event.action == "destroy":
+                    self.sprites.remove(event.object)
         for sprite in self.sprites:
             sprite: Gameobject = sprite
             sprite.handle_event(event)
+    
+    @classmethod
+    def get_nested_classes(cls):
+        return {
+            name: member
+            for name, member in inspect.getmembers(cls)
+            if (
+                inspect.isclass(member)
+                and member.__module__ == cls.__module__
+                and member.__qualname__.startswith(cls.__qualname__ + ".")
+            )
+        }
+
+    @classmethod
+    def dispatch_instance(cls, instance):
+        for name, subclass in cls.get_nested_classes().items():
+            if isinstance(instance, subclass):
+                return type(instance)
+
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> TypeError: {type(instance).__name__}", DEBUG_CORE_ERROR)
+        TypeError(f"Unknown type instance : {type(instance).__name__}")

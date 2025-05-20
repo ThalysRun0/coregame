@@ -13,6 +13,7 @@ from core.gameobject import Gameobject
 from core.gizmos import Gizmos
 from core.collider2d import Collider2D, RectCollider2D, CircleCollider2D, Hits, Hit
 from core.rigidbody2d import Rigidbody2D
+import assets.levels as levels
 
 class MainScene(Scene):
     COUNTDOWN_EVENT = pygame.USEREVENT + 1
@@ -54,30 +55,48 @@ class MainScene(Scene):
                 self.bricks.append(self.Brick1(f"brick12_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
             for i in range(0, 10):
                 self.bricks.append(self.Brick1(f"brick13_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
-#        if level == 4:
-#            for i in range(0, 10):
-#                self.bricks.append(self.Brick3(f"brick3_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
-#            for i in range(0, 10):
-#                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
-#            for i in range(0, 10):
-#                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
         if level == 4:
             for i in range(0, 10):
                 self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
             for i in range(0, 10):
                 self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
-#            for i in range(0, 10):
-#                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
-        if level == 5:
-            for i in range(0, 10):
-                self.bricks.append(self.Brick1(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
-            for i in range(0, 10):
-                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
-#            for i in range(0, 10):
-#                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
-        if level >= 6:
-            self.bricks.append(self.Brick1(f"brick1_1", self.screen, self.main_camera, pygame.Vector2((60)+(self.screen.get_width()/10)+50, 100)))
+#       if level == 5:
+#           for i in range(1, 7):
+#               if i % 2 == 0: # even
+#                   for j in range(1, i+1):
+#                       if j <= i/2:
+#                           x = (self.screen.get_width()/2 - ((j*60)))
+#                           y = (i*50)
+#                           self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2(x, y)))
+#                       else:
+#                           x = (self.screen.get_width()/2 + (((i-j)*60)))
+#                           y = (i*50)
+#                           self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2(x, y)))
+#               else: # odd
+#                   for j in range(1, i+1):
+#                       if j <= i/2:
+#                           x = (self.screen.get_width()/2 - ((j*60))-30)
+#                           y = (i*50)
+#                           self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2(x, y)))
+#                       else:
+#                           x = (self.screen.get_width()/2 + (((i-j)*60))-30)
+#                           y = (i*50)
+#                           self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2(x, y)))
+        if level >= 5:
+            tmp = levels.levels[level]
+
+            for i in range(0, len(tmp)):
+                for j in range(0, len(tmp[i])):
+                    if tmp[i][j] == 1:
+                        self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((j*60)+(self.screen.get_width()/10)+50, (i*30)+50)))
+                    if tmp[i][j] == 2:
+                        self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((j*60)+(self.screen.get_width()/10)+50, (i*30)+50)))
+                    if tmp[i][j] == 3:
+                        self.bricks.append(self.Brick3(f"brick3_{i}", self.screen, self.main_camera, pygame.Vector2((j*60)+(self.screen.get_width()/10)+50, (i*30)+50)))
+
+        # finalize
         self.sprites.add(self.bricks)
+
 
     def start(self):
         super().start()

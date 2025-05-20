@@ -77,12 +77,16 @@ class MainScene(Scene):
     def handle_event(self, event):
         super().handle_event(event)
 
-        if Input.get_key_down(pygame.K_SPACE):
+        if Input.get_key_up(pygame.K_p):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "pause"}))
         if Input.get_key_down(pygame.K_ESCAPE):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "quit"}))
-        if Input.get_key_down(pygame.K_F1):
+        if Input.get_key_up(pygame.K_F1):
             Gizmos.toggle()
+#        if Input.get_key(pygame.K_q):
+#            self.main_camera.position.x -= 10
+#        if Input.get_key(pygame.K_d):
+#            self.main_camera.position.x += 10
 
         if event.type == self.COUNTDOWN_EVENT:
             self.unincr.value -= 1

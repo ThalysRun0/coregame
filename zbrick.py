@@ -21,28 +21,74 @@ class MainScene(Scene):
         super().__init__("main_scene", screen)
         self.unincr = self.UnIncr("unincr", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2, self.screen.get_height()/2), size=(100, 50))
         self.player1 = self.Paddle("player1", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()/2, self.screen.get_height()-40))
+        self.player1.is_sticky = True
         self.top_wall = self.Wall("top_wall", self.screen, self.main_camera, pygame.Vector2(0, 0), pygame.Vector2(self.screen.get_width(), 20))
         self.left_wall = self.Wall("left_wall", self.screen, self.main_camera, pygame.Vector2(0, 20), pygame.Vector2(20, self.screen.get_height()-40))
         self.right_wall = self.Wall("right_wall", self.screen, self.main_camera, pygame.Vector2(self.screen.get_width()-20, 20), pygame.Vector2(20, self.screen.get_height()-40))
         self.balls = []
         self.bricks = []
-        for i in range(0, 10):
-            self.bricks.append(self.Brick3(f"brick3_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
-        for i in range(0, 10):
-            self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
-        for i in range(0, 10):
-            self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
+        self.level = 1
+        self.init_level(self.level)
 
-        self.sprites.add(self.player1, self.top_wall, self.left_wall, self.right_wall, self.bricks)
+        self.sprites.add(self.player1, self.top_wall, self.left_wall, self.right_wall)
         self.scores: int = 0
-        self.restart(0)
+        self.restart(self.scores)
+
+    def init_level(self, level):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
+        self.sprites.remove(self.bricks)
+        self.bricks.clear()
+
+        if level == 1:
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+        if level == 2:
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick12_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
+        if level == 3:
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick12_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick13_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
+#        if level == 4:
+#            for i in range(0, 10):
+#                self.bricks.append(self.Brick3(f"brick3_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+#            for i in range(0, 10):
+#                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
+#            for i in range(0, 10):
+#                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
+        if level == 4:
+            for i in range(0, 10):
+                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
+#            for i in range(0, 10):
+#                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
+        if level == 5:
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 50)))
+            for i in range(0, 10):
+                self.bricks.append(self.Brick1(f"brick1_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 100)))
+#            for i in range(0, 10):
+#                self.bricks.append(self.Brick2(f"brick2_{i}", self.screen, self.main_camera, pygame.Vector2((i*60)+(self.screen.get_width()/10)+50, 150)))
+        if level >= 6:
+            self.bricks.append(self.Brick1(f"brick1_1", self.screen, self.main_camera, pygame.Vector2((60)+(self.screen.get_width()/10)+50, 100)))
+        self.sprites.add(self.bricks)
 
     def start(self):
         super().start()
         pygame.time.set_timer(self.COUNTDOWN_EVENT, 1000)
 
     def restart(self, score_added: int):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
+        self.scores = score_added
+        self.player1.is_sticky = True
         self.unincr.value = 3
+        self.sprites.remove(self.balls)
         self.balls.clear()
         new_ball = self.add_ball("ball_1", pygame.Vector2(self.screen.get_width()/2/2, self.screen.get_height()/2))
         new_ball.rigidbody.velocity = pygame.Vector2(0, 0)
@@ -51,28 +97,46 @@ class MainScene(Scene):
     def play(self):
         if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         self.unincr.active = False
-        self.balls[0].rigidbody.apply_force(pygame.Vector2(200, -150))
 
     def add_ball(self, name, position: pygame.Vector2):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
         new_ball = self.Ball(name, self.screen, self.main_camera, position)
         self.balls.append(new_ball)
         self.sprites.add(new_ball)
         return new_ball
 
     # TODO: need refinement
-    def add_multi_ball(self):
-        for i in range(1, 5):
-            new_ball = self.add_ball(f"ball_{i+1}", self.balls[0].position)
-            new_ball.rigidbody.apply_force(pygame.Vector2(randint(-149, 149), randint(-99, 99)))
-            self.balls.append(new_ball)
-            self.sprites.add(new_ball)
+#    def add_multi_ball(self):
+#        for i in range(1, 5):
+#            new_ball = self.add_ball(f"ball_{i+1}", pygame.Vector2(self.balls[0].position.x+20, self.balls[0].position.y+20))
+#            new_ball.rigidbody.apply_force(pygame.Vector2(randint(-149, 149), randint(-99, 99)))
+#            self.balls.append(new_ball)
+#            self.sprites.add(new_ball)
+
+    def level_update(self, update=1):
+        if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name}")
+        self.level += update
+        self.init_level(self.level)
 
     def update(self, delta_time):
         super().update(delta_time)
+
+        if len(self.bricks) <= 0:
+            pygame.event.clear()
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "level", "update": 1}))
+
         self.check_collision()
         while len(Hits.hits) > 0:
             hit: Hit = Hits.pop_hit()
             if hit.collided:
+                if (isinstance(hit.self.parent, self.Ball) and isinstance(hit.other.parent, self.Paddle)):
+                    if hit.other.parent.is_sticky:
+                        hit.self.parent.position = hit.other.parent.sticky_pos
+                        continue
+                if (isinstance(hit.self.parent, self.Paddle) and isinstance(hit.other.parent, self.Ball)):
+                    if hit.self.parent.is_sticky:
+                        hit.other.parent.position = hit.self.parent.sticky_pos
+                        continue
                 hit.self.parent.on_collision(hit)
                 hit.other.parent.on_collision(hit)
 
@@ -84,17 +148,39 @@ class MainScene(Scene):
                 tmp_ball.destroy()
                 if len(self.balls) <= 0:
                     self.restart(0)
+        if self.player1.is_sticky:
+            self.balls[0].position = self.player1.sticky_pos
 
     def handle_event(self, event):
         super().handle_event(event)
-        if Input.get_key_down(pygame.K_SPACE):
+        if Input.get_key_up(pygame.K_SPACE):
+            if self.player1.is_sticky:
+                self.player1.is_sticky = False
+                self.balls[0].rigidbody.velocity = pygame.Vector2(0, 0)
+                self.balls[0].rigidbody.apply_force(pygame.Vector2(200, -150))
+        if Input.get_key_up(pygame.K_p):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "pause"}))
         if Input.get_key_down(pygame.K_ESCAPE):
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "quit"}))
-        if Input.get_key_down(pygame.K_F1):
+        if Input.get_key_up(pygame.K_F1):
             Gizmos.toggle()
-        if Input.get_key_down(pygame.K_m):
-            self.add_multi_ball()
+        if Input.get_key_up(pygame.K_s):
+            self.player1.is_sticky = not self.player1.is_sticky
+        if Input.get_key_up(pygame.K_KP_PLUS):
+            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> key level_up")
+ #           self.sprites.remove(self.bricks)
+ #           self.bricks.clear()
+            pygame.event.clear()
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "level", "update": 1}))
+        if Input.get_key_up(pygame.K_KP_MINUS):
+            if DEFAULT_CORE_DEBUG: Debug.main.log(f"{__class__.__name__}::{inspect.currentframe().f_code.co_name} -> key level_down")
+#            self.sprites.remove(self.bricks)
+#            self.bricks.clear()
+            pygame.event.clear()
+            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "level", "update": -1}))
+
+#        if Input.get_key_up(pygame.K_m):
+#            pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "multi"}))
 
         if event.type == self.COUNTDOWN_EVENT:
             self.unincr.value -= 1
@@ -104,8 +190,15 @@ class MainScene(Scene):
 
         if event.type == pygame.USEREVENT:
             if hasattr(event, 'action'):
+                if event.action == "level":
+                    pygame.event.clear()
+                    self.level_update(event.update)
+                if event.action == "multi":
+                    self.add_multi_ball()
                 if event.action == "score":
-                    self.scores += int(event.add)
+                    if event.hit.self.parent in self.bricks:
+                        self.scores += int(event.add)
+                        self.bricks.remove(event.hit.self.parent)
                 if event.action == "pause":
                     self.toggle_pause()
                 if event.action == "restart":
@@ -118,9 +211,11 @@ class MainScene(Scene):
         #Debug.main.draw(screen)
         #Debug.debug_grid_vertical(screen, 100)
         Debug.line = 2
+        Debug.debug_on_screen(screen, 30, Debug.line, f"level : {self.level}", WHITE, True)
         Debug.debug_on_screen(screen, 30, Debug.line, f"score : {self.scores}", WHITE, True)
         Debug.debug_on_screen(screen, 30, Debug.line, f"decre : {self.unincr.value}", WHITE, True)
         Debug.debug_on_screen(screen, 30, Debug.line, f"Balls : {len(self.balls)}", WHITE, True)
+        Debug.debug_on_screen(screen, 30, Debug.line, f"Bricks : {len(self.bricks)}", WHITE, True)
 #        if len(self.balls)>0:
 #            Debug.debug_on_screen(screen, 30, Debug.line, f"(ball_velocity: {self.balls[0].rigidbody.velocity})", WHITE, False)
 #            Debug.debug_on_screen(screen, 30, Debug.line, f"(ball_position: {self.balls[0].position})", WHITE, False)
@@ -189,6 +284,8 @@ class MainScene(Scene):
         def __init__(self, name, screen, camera, position: pygame.Vector2):
             super().__init__(name, screen, camera, position, size=pygame.Vector2(100, 20))
             self.collider = RectCollider2D(self)
+            self.is_sticky = True
+            self.sticky_pos = self.position
 
         def update(self, delta_time):
             super().update(delta_time)
@@ -196,10 +293,12 @@ class MainScene(Scene):
                 self.position.x -= 10
             if Input.get_key(pygame.K_RIGHT):
                 self.position.x += 10
+            self.sticky_pos = pygame.Vector2(self.position.x+self.size.x-30, self.position.y-20)
 
         def draw(self, screen: pygame.Surface, camera):
             super().draw(screen, camera)
-            pygame.draw.rect(screen, WHITE, self.rect)
+            color = (YELLOW if self.is_sticky else WHITE)
+            pygame.draw.rect(screen, color, self.rect)
             Gizmos.draw_collider(screen, self.collider, GREEN, 0)
 
     class Brick1(Gameobject):
@@ -216,7 +315,7 @@ class MainScene(Scene):
         def on_collision(self, hit: Hit):
             self.current_value -= 1
             if self.current_value <= 0:
-                pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "score", "add": f"{str(self.value)}"}))
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT, {"action": "score", "add": self.value, "hit": hit}))
                 self.destroy()
 
         def draw(self, screen: pygame.Surface, camera):

@@ -9,7 +9,7 @@ source coregame-venv/bin/activate
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
-python coregame/test.py
+python coregame/zpong.py
 ```
 ## report
 -2025.05.15  

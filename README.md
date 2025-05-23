@@ -4,7 +4,7 @@
 git clone \<me\>
 
 ```bash
-python -m venv coregame-venv
+python<version> -m venv coregame-venv
 source coregame-venv/bin/activate
 
 python -m pip install --upgrade pip

@@ -25,6 +25,11 @@ but introduced an artefact rotating around paddle
 nice effect but not intended  
 
 ### TODO
+- **pending** UnIncr  
+make it in a seperate class in assets  
+also make it functional  
+the objective is to disable some scene object while decrement is pending  
+
 - **pending** multi-ball  
 adding multi ball generation by pressing a keyboard key  
 pending work about convex collision  
@@ -35,8 +40,7 @@ first version with lot of work to do
 - **done** generic way to check for collision  
 ... coregame/test.py", line 40, in update  
 self.check_collision() # TODO: need refinement  
-all Gameobject collides with eachother in the scene ???
-@attempting something to 
+all Gameobject collides with eachother in the scene
 
 ## pending-doc
 ### install not dev

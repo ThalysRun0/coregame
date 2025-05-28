@@ -25,7 +25,7 @@ class Scene:
             sprite: Gameobject = sprite
             sprite.start()
         self.started = True
-    
+
     def update(self, delta_time):
         """to be called at the very beginning of your update method implementation
         ```super().update(delta_time)
@@ -76,7 +76,7 @@ class Scene:
         for sprite in self.sprites:
             sprite: Gameobject = sprite
             sprite.handle_event(event)
-    
+
     @classmethod
     def get_nested_classes(cls):
         return {

@@ -21,7 +21,7 @@ class Camera:
         self.zoom = 1.0
         self._initialized = True
 
-    def world_to_screen(self, world_pos):
+    def world_to_screen(self, world_pos: pygame.Vector2):
         screen_x = (world_pos.x - self.position.x)
         screen_y = (world_pos.y - self.position.y)
         return pygame.Vector2(screen_x, screen_y)

@@ -24,6 +24,7 @@ class Gameobject(pygame.sprite.Sprite):
         self.parent: Gameobject = None
         self.position = position
         self.size = size
+        print(f"init -> {__class__.__name__}:{type(self.position)}")
         self.screen_pos = self.camera.world_to_screen(self.position)
         self.rect = pygame.Rect(self.screen_pos, self.size)
 

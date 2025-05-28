@@ -27,6 +27,10 @@ nice effect but not intended
 ### TODO
 - **pending** multi-ball  
 adding multi ball generation by pressing a keyboard key  
+pending work about convex collision  
+
+- **pending** snake game  
+first version with lot of work to do  
 
 - **done** generic way to check for collision  
 ... coregame/test.py", line 40, in update  

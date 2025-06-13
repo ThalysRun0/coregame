@@ -4,6 +4,7 @@
 git clone \<me\>
 
 ```bash
+cd coregame
 python<version> -m venv coregame-venv
 source coregame-venv/bin/activate
 
